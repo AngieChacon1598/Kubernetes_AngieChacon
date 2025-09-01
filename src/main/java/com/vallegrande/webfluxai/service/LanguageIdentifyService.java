@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -59,18 +60,36 @@ public class LanguageIdentifyService {
                                 })
                 )
                 .bodyToMono(JsonNode.class)
-                .map(response -> {
+                .flatMap(response -> {
                     // Extraemos el primer resultado
                     JsonNode codes = response.get("languageCodes");
                     if (codes != null && codes.isArray() && codes.size() > 0) {
-                        // Solo tomamos el primero (el más confiable)
-                        log.info("Idioma detectado: {} con confianza: {}", 
-                                codes.get(0).get("code").asText(),
-                                codes.get(0).get("confidence").asDouble());
-                        return codes.get(0);
+                        JsonNode firstCode = codes.get(0);
+                        String languageCode = firstCode.get("code").asText();
+                        double confidence = firstCode.get("confidence").asDouble();
+                        
+                        log.info("Idioma detectado: {} con confianza: {}", languageCode, confidence);
+                        
+                        // Crear y guardar la detección en MongoDB
+                        LanguageDetection detection = LanguageDetection.builder()
+                                .text(text)
+                                .createdAt(LocalDateTime.now())
+                                .confidence(confidence)
+                                .detectedLanguage(DetectedLanguage.builder()
+                                        .code(languageCode)
+                                        .name(getLanguageName(languageCode))
+                                        .build())
+                                .build();
+                        
+                        return repository.save(detection)
+                                .map(savedDetection -> {
+                                    log.info("Detección guardada en MongoDB con ID: {}", savedDetection.getId());
+                                    return firstCode;
+                                });
                     }
+                    
                     log.warn("No se encontraron códigos de idioma en la respuesta");
-                    return response;
+                    return Mono.just(response);
                 })
                 .doOnNext(result -> log.info("Resultado final: {}", result));
     }
@@ -81,6 +100,10 @@ public class LanguageIdentifyService {
                         HttpStatus.NOT_FOUND,
                         "Language detection not found with id: " + id
                 )));
+    }
+
+    public Flux<LanguageDetection> getAllDetections() {
+        return repository.findAll();
     }
     
     private String getLanguageName(String code) {

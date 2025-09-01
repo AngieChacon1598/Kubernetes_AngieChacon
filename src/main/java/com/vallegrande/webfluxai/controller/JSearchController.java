@@ -7,6 +7,7 @@ import com.vallegrande.webfluxai.service.JSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -46,5 +47,10 @@ public class JSearchController {
         return jSearchService.getSearchResultById(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/all")
+    public Mono<ResponseEntity<Flux<JobSearchResult>>> getAllSearchResults() {
+        return Mono.just(ResponseEntity.ok(jSearchService.getAllSearchResults()));
     }
 }

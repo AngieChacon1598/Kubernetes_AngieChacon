@@ -74,6 +74,17 @@ curl -X GET "http://localhost:8088/api/v1/jobs/details/n20AgUu1KG0BGjzoAAAAAA=="
 **Parámetros**:
 - `id` (requerido): ID del resultado de búsqueda guardado en la base de datos
 
+### 4. Obtener Todas las Búsquedas Guardadas
+
+**Endpoint**: `GET /api/v1/jobs/all`
+
+**Descripción**: Retorna todas las búsquedas de trabajos guardadas en MongoDB
+
+**Ejemplo de uso**:
+```bash
+curl -X GET "http://localhost:8088/api/v1/jobs/all"
+```
+
 ## Parámetros de la API JSearch
 
 Según la documentación de JSearch, los parámetros soportados incluyen:
@@ -129,6 +140,11 @@ Para probar en Postman:
    GET http://localhost:8088/api/v1/test/jsearch-connection
    ```
 
+3. **Ver información de MongoDB**:
+   ```
+   GET http://localhost:8088/api/v1/test/mongodb-info
+   ```
+
 ### Endpoints Principales:
 
 3. **Búsqueda básica**:
@@ -144,6 +160,11 @@ Para probar en Postman:
 5. **Detalles de trabajo**:
    ```
    GET http://localhost:8088/api/v1/jobs/details/{jobId}
+   ```
+
+6. **Ver todas las búsquedas guardadas**:
+   ```
+   GET http://localhost:8088/api/v1/jobs/all
    ```
 
 ## Notas Importantes

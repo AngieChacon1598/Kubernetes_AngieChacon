@@ -29,6 +29,8 @@ Content-Type: application/json
 *Obtener detección por ID:*
 `GET /api/v1/language/detections/{id}`
 
+*Obtener todas las detecciones:*
+`GET /api/v1/language/detections`
 
 
 **JSEARCH**
@@ -92,6 +94,24 @@ La API ofrece varios endpoints (todos con autenticación vía RapidAPI). Los má
 1. mvn clean install
 2. mvn spring-boot:run
 
+**Ver información de MongoDB**:
+   ```
+   GET http://localhost:8088/api/v1/test/mongodb-info
+   ```
 
+6. **Ver todas las búsquedas guardadas**:
+   ```
+   GET http://localhost:8088/api/v1/jobs/all
+   ```
 
+### 4. Obtener Todas las Búsquedas Guardadas
+
+**Endpoint**: `GET /api/v1/jobs/all`
+
+**Descripción**: Retorna todas las búsquedas de trabajos guardadas en MongoDB
+
+**Ejemplo de uso**:
+```bash
+curl -X GET "http://localhost:8088/api/v1/jobs/all"
+```
 

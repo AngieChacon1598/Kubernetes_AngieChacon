@@ -134,4 +134,46 @@ public class TestController {
                             .body("Request failed: " + error.getMessage()));
                 });
     }
+
+    @GetMapping("/mongodb-info")
+    public Mono<ResponseEntity<String>> getMongoDBInfo() {
+        log.info("Getting MongoDB information");
+        
+        // Aquí podrías agregar lógica para obtener información de la base de datos
+        // Por ahora retornamos información básica
+        return Mono.just(ResponseEntity.ok(
+                "MongoDB Connection Info:\n" +
+                "- Database: webflux-ai\n" +
+                "- Collections: job_search_results, language_detections\n" +
+                "- Connection: MongoDB Atlas (Cloud)\n\n" +
+                "Para ver los datos guardados, usa:\n" +
+                "- GET /api/v1/jobs/all (todas las búsquedas de trabajos)\n" +
+                "- GET /api/v1/jobs/{id} (búsqueda específica de trabajos)\n" +
+                "- GET /api/v1/language/detections (todas las detecciones de idioma)\n" +
+                "- GET /api/v1/language/detections/{id} (detección específica de idioma)\n\n" +
+                "Para probar Language Identify:\n" +
+                "- POST /api/v1/language/detect con body: {\"text\": \"Hello world\"}"
+        ));
+    }
+
+    @GetMapping("/language-test")
+    public Mono<ResponseEntity<String>> testLanguageDetection() {
+        log.info("Testing Language Identify API");
+        
+        return Mono.just(ResponseEntity.ok(
+                "Para probar Language Identify, usa:\n\n" +
+                "POST http://localhost:8088/api/v1/language/detect\n" +
+                "Content-Type: application/json\n\n" +
+                "Body:\n" +
+                "{\n" +
+                "  \"text\": \"Hello, how are you today?\"\n" +
+                "}\n\n" +
+                "O para español:\n" +
+                "{\n" +
+                "  \"text\": \"Hola, ¿cómo estás?\"\n" +
+                "}\n\n" +
+                "Después verifica en:\n" +
+                "GET http://localhost:8088/api/v1/language/detections"
+        ));
+    }
 }

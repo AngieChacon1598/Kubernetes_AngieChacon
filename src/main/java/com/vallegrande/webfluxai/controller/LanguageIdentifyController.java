@@ -6,6 +6,7 @@ import com.vallegrande.webfluxai.service.LanguageIdentifyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -28,5 +29,10 @@ public class LanguageIdentifyController {
         return languageIdentifyService.getDetectionById(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/detections")
+    public Mono<ResponseEntity<Flux<LanguageDetection>>> getAllDetections() {
+        return Mono.just(ResponseEntity.ok(languageIdentifyService.getAllDetections()));
     }
 }
