@@ -10,6 +10,7 @@ import com.vallegrande.webfluxai.model.LanguageDetection.DetectedLanguage;
 import com.vallegrande.webfluxai.repository.LanguageDetectionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 @RequiredArgsConstructor
 public class LanguageIdentifyService {
 
-    private final WebClient webClient;
+    @Qualifier("languageIdentifyWebClient")
+    private final WebClient languageIdentifyWebClient;
     private final LanguageDetectionRepository repository;
     private final ApiProperties apiProperties;
 
@@ -40,10 +42,8 @@ public class LanguageIdentifyService {
             ));
         }
         
-        return webClient.post()
-                .uri(config.getBaseUrl())
-                .header("X-RapidAPI-Key", config.getApiKey())
-                .header("X-RapidAPI-Host", config.getApiHost())
+        return languageIdentifyWebClient.post()
+                .uri("/languageIdentify")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("text", text))
                 .retrieve()

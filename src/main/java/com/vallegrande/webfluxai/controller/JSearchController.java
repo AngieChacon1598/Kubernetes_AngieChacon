@@ -1,6 +1,7 @@
 package com.vallegrande.webfluxai.controller;
 
 import com.vallegrande.webfluxai.dto.JobSearchRequest;
+import com.vallegrande.webfluxai.dto.JobSearchResponse;
 import com.vallegrande.webfluxai.model.JobSearchResult;
 import com.vallegrande.webfluxai.service.JSearchService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,13 @@ public class JSearchController {
         request.setResultsPerPage(resultsPerPage);
 
         return jSearchService.searchJobs(request)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/details/{jobId}")
+    public Mono<ResponseEntity<JobSearchResponse.Job>> getJobDetails(@PathVariable String jobId) {
+        return jSearchService.getJobDetails(jobId)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }

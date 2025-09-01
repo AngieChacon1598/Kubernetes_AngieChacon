@@ -31,7 +31,7 @@ spring:
 ai:
   apis:
     language-identify:
-      base-url: https://language-identify-detector.p.rapidapi.com/languageIdentify
+      base-url: https://language-identify-detector.p.rapidapi.com
       api-key: 7eed17039dmsh63431ac43f3bab8p1c600cjsn1eee5acffea8
       api-host: language-identify-detector.p.rapidapi.com
     jsearch:

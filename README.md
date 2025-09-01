@@ -23,11 +23,11 @@ Detección de idioma → `POST /identify`
 ⚡**Uso**
 
 *Detectar idioma de un texto:*
-POST /api/v1/language/detect
+`POST /api/v1/language/detect`
 Content-Type: application/json
 
 *Obtener detección por ID:*
-GET /api/v1/language/detections/{id}
+`GET /api/v1/language/detections/{id}`
 
 
 
@@ -61,10 +61,13 @@ La API ofrece varios endpoints (todos con autenticación vía RapidAPI). Los má
 - *API Reactiva*: Desarrollada con Spring WebFlux para un manejo eficiente de solicitudes concurrentes.
 
 **Buscar trabajos:**
-GET /api/v1/jobs/search?query=java&location=remote&page=1&resultsPerPage=10
+`GET /api/v1/jobs/search?query=java&location=remote&page=1&resultsPerPage=10`
+
+**Obtener detalles de un trabajo específico:**
+`GET /api/v1/jobs/details/{jobId}`
 
 **Obtener búsqueda por ID:**
-GET /api/v1/jobs/{id}
+`GET /api/v1/jobs/{id}`
 
 
 🛠️**Tecnologías utilizadas**
