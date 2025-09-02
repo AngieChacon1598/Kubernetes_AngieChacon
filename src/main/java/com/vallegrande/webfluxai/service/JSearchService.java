@@ -33,6 +33,10 @@ public class JSearchService {
     public Mono<JobSearchResult> searchJobs(JobSearchRequest request) {
         log.info("Searching jobs with query: {}, location: {}", request.getQuery(), request.getLocation());
         
+        // Determinar país basado en la ubicación
+        final String country = determineCountry(request.getLocation());
+        log.info("Using country code: {} for location: {}", country, request.getLocation());
+        
         // Limitar el número de resultados para evitar respuestas muy grandes
         int numPages = Math.min(request.getResultsPerPage(), 5); // Máximo 5 páginas por defecto
         
@@ -42,7 +46,7 @@ public class JSearchService {
                         .queryParam("query", request.getQuery())
                         .queryParam("page", request.getPage())
                         .queryParam("num_pages", numPages) // Usar el valor limitado
-                        .queryParam("country", "us") // Default country
+                        .queryParam("country", country) // País detectado automáticamente
                         .queryParam("date_posted", "all") // All dates
                         .build())
                 .retrieve()
@@ -167,6 +171,20 @@ public class JSearchService {
                     }
                     return Mono.just(response.getData().get(0));
                 });
+    }
+
+    private String determineCountry(String location) {
+        if (location == null) return "us";
+        
+        String loc = location.toLowerCase();
+        if (loc.contains("peru") || loc.contains("trujillo") || loc.contains("lima")) {
+            return "pe";
+        } else if (loc.contains("mexico") || loc.contains("cdmx")) {
+            return "mx";
+        } else if (loc.contains("spain") || location.contains("madrid") || location.contains("barcelona")) {
+            return "es";
+        }
+        return "us"; // Default
     }
 
     private LocalDateTime parseDateTime(String dateTimeStr) {

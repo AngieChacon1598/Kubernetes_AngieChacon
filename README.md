@@ -2,7 +2,7 @@
 
 Este proyecto es una aplicación Spring WebFlux que consume dos APIs de IA diferentes (Language Identify y JSearch) y almacena los resultados en una base de datos MongoDB.
 
-**LANGUAGE IDENTIFY**
+**1ERA API: LANGUAGE IDENTIFY**
 
 🔎 **¿Qué es Language Identify?**
 
@@ -33,7 +33,7 @@ Content-Type: application/json
 `GET /api/v1/language/detections`
 
 
-**JSEARCH**
+**2DA API: JSEARCH** 
 
 🔎 **¿Qué es JSearch?**
 

@@ -176,4 +176,24 @@ public class TestController {
                 "GET http://localhost:8088/api/v1/language/detections"
         ));
     }
+
+    @GetMapping("/jsearch-test-countries")
+    public Mono<ResponseEntity<String>> testJSearchCountries() {
+        log.info("Testing JSearch with different countries");
+        
+        return Mono.just(ResponseEntity.ok(
+                "Prueba JSearch con diferentes países:\n\n" +
+                "1. **Perú (Trujillo)**:\n" +
+                "   GET http://localhost:8088/api/v1/jobs/search?query=developer&location=trujillo\n\n" +
+                "2. **Estados Unidos (Chicago)**:\n" +
+                "   GET http://localhost:8088/api/v1/jobs/search?query=developer&location=chicago\n\n" +
+                "3. **México (CDMX)**:\n" +
+                "   GET http://localhost:8088/api/v1/jobs/search?query=developer&location=mexico\n\n" +
+                "4. **España (Madrid)**:\n" +
+                "   GET http://localhost:8088/api/v1/jobs/search?query=developer&location=madrid\n\n" +
+                "5. **Sin ubicación (US por defecto)**:\n" +
+                "   GET http://localhost:8088/api/v1/jobs/search?query=developer\n\n" +
+                "El servicio detecta automáticamente el país basado en la ubicación."
+        ));
+    }
 }
