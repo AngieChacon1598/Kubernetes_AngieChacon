@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class WebClientConfig {
 
-    private static final int TIMEOUT = 30000; // 30 segundos para APIs externas
-    private static final int MAX_IN_MEMORY_SIZE = 16 * 1024 * 1024; // 16 MB para respuestas grandes
+    private static final int TIMEOUT = 30000; 
+    private static final int MAX_IN_MEMORY_SIZE = 16 * 1024 * 1024; 
 
     private HttpClient createHttpClient() {
         return HttpClient.create()

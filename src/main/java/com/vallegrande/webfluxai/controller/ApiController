@@ -18,22 +18,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ApiController {
 
-    private final UserRepository userRepo;
-    private final ProductRepository productRepo;
     private final LanguageService languageService;
     private final SearchService searchService;
 
-    // Neon (SQL)
-    @GetMapping("/users")
-    public Flux<User> getUsers() {
-        return userRepo.findAll();
-    }
-
-    // MongoDB (NoSQL)
-    @GetMapping("/products")
-    public Flux<Product> getProducts() {
-        return productRepo.findAll();
-    }
 
     // API IA: detección de idioma
     @PostMapping("/detect-language")
