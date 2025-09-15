@@ -2,8 +2,6 @@ package com.vallegrande.webfluxai.service;
 
 import com.vallegrande.webfluxai.config.ApiProperties;
 import com.vallegrande.webfluxai.config.ApiProperties.LanguageIdentify;
-import com.vallegrande.webfluxai.dto.LanguageDetectionRequest;
-import com.vallegrande.webfluxai.dto.LanguageDetectionResponse;
 import com.vallegrande.webfluxai.exception.ApiException;
 import com.vallegrande.webfluxai.model.LanguageDetection;
 import com.vallegrande.webfluxai.model.LanguageDetection.DetectedLanguage;
@@ -61,31 +59,43 @@ public class LanguageIdentifyService {
                 )
                 .bodyToMono(JsonNode.class)
                 .flatMap(response -> {
-                    // Extraemos el primer resultado
+                    
                     JsonNode codes = response.get("languageCodes");
                     if (codes != null && codes.isArray() && codes.size() > 0) {
-                        JsonNode firstCode = codes.get(0);
-                        String languageCode = firstCode.get("code").asText();
-                        double confidence = firstCode.get("confidence").asDouble();
                         
-                        log.info("Idioma detectado: {} con confianza: {}", languageCode, confidence);
+                        com.fasterxml.jackson.databind.node.ArrayNode allDetections = 
+                            new com.fasterxml.jackson.databind.node.JsonNodeFactory(false).arrayNode();
                         
-                        // Crear y guardar la detección en MongoDB
-                        LanguageDetection detection = LanguageDetection.builder()
-                                .text(text)
-                                .createdAt(LocalDateTime.now())
-                                .confidence(confidence)
-                                .detectedLanguage(DetectedLanguage.builder()
-                                        .code(languageCode)
-                                        .name(getLanguageName(languageCode))
-                                        .build())
-                                .build();
+                        for (JsonNode codeNode : codes) {
+                            String languageCode = codeNode.get("code").asText();
+                            double confidence = codeNode.get("confidence").asDouble();
+                            
+                            log.info("Idioma detectado: {} con confianza: {}", languageCode, confidence);
+                                                       
+                            allDetections.add(codeNode);
+                                                
+                            if (allDetections.size() == 1) {
+                                LanguageDetection detection = LanguageDetection.builder()
+                                        .text(text)
+                                        .createdAt(LocalDateTime.now())
+                                        .confidence(confidence)
+                                        .detectedLanguage(DetectedLanguage.builder()
+                                                .code(languageCode)
+                                                .name(getLanguageName(languageCode))
+                                                .build())
+                                        .build();
+                                
+                                return repository.save(detection)
+                                        .map(savedDetection -> {
+                                            log.info("Detección principal guardada en MongoDB con ID: {}", savedDetection.getId());
+                                            return response; // Devolvemos toda la respuesta original
+                                        });
+                            }
+                        }
                         
-                        return repository.save(detection)
-                                .map(savedDetection -> {
-                                    log.info("Detección guardada en MongoDB con ID: {}", savedDetection.getId());
-                                    return firstCode;
-                                });
+                        // Si llegamos aquí, hay múltiples idiomas pero no se pudo guardar en MongoDB
+                        log.info("Se detectaron múltiples idiomas: {}", allDetections.size());
+                        return Mono.just(response);
                     }
                     
                     log.warn("No se encontraron códigos de idioma en la respuesta");
