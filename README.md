@@ -1,4 +1,4 @@
-🌐 *WEBGLUX AI INTEGRATION*
+🌐 *WEBFLUX AI INTEGRATION*
 
 Este proyecto es una aplicación Spring WebFlux que consume dos APIs de IA diferentes (Language Identify y JSearch) y almacena los resultados en una base de datos MongoDB.
 
@@ -93,20 +93,4 @@ La API ofrece varios endpoints (todos con autenticación vía RapidAPI). Los má
 🚀Ejecución
 1. mvn clean install
 2. mvn spring-boot:run
-
-**Ver información de MongoDB**:
-   ```
-   GET http://localhost:8088/api/v1/test/mongodb-info
-   ```
-
-3. **Ver todas las búsquedas guardadas**:
-   ```
-   GET http://localhost:8088/api/v1/jobs/all
-   ```
-
-4. Obtener Todas las Búsquedas Guardadas
-
-**Endpoint**: `GET /api/v1/jobs/all`
-
-**Descripción**: Retorna todas las búsquedas de trabajos guardadas en MongoDB
 

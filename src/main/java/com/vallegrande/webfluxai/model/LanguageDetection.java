@@ -22,6 +22,9 @@ public class LanguageDetection {
     private Double confidence;
     private LocalDateTime createdAt;
     private String apiVersion;
+    private LocalDateTime updatedAt;
+    private Boolean deleted;
+    private LocalDateTime deletedAt;
 
     @Data
     @Builder

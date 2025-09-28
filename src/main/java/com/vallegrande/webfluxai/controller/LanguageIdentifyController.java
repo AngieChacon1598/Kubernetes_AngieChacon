@@ -32,7 +32,38 @@ public class LanguageIdentifyController {
     }
 
     @GetMapping("/detections")
-    public Mono<ResponseEntity<Flux<LanguageDetection>>> getAllDetections() {
+    public Mono<ResponseEntity<Flux<LanguageDetection>>> getAllDetections(
+            @RequestParam(required = false) Boolean includeDeleted) {
+        if (Boolean.TRUE.equals(includeDeleted)) {
+            return Mono.just(ResponseEntity.ok(languageIdentifyService.getAllDetectionsIncludingDeleted()));
+        }
         return Mono.just(ResponseEntity.ok(languageIdentifyService.getAllDetections()));
+    }
+
+    @GetMapping("/detections/deleted")
+    public Mono<ResponseEntity<Flux<LanguageDetection>>> getDeletedDetections() {
+        return Mono.just(ResponseEntity.ok(languageIdentifyService.getDeletedDetections()));
+    }
+
+    @PutMapping("/detections/{id}")
+    public Mono<ResponseEntity<LanguageDetection>> updateDetection(
+            @PathVariable String id,
+            @RequestBody LanguageDetectionRequest request) {
+        return languageIdentifyService.updateDetection(id, request.getText())
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/detections/{id}")
+    public Mono<ResponseEntity<Void>> deleteDetection(@PathVariable String id) {
+        return languageIdentifyService.softDeleteDetection(id)
+                .thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @PatchMapping("/detections/{id}/restore")
+    public Mono<ResponseEntity<LanguageDetection>> restoreDetection(@PathVariable String id) {
+        return languageIdentifyService.restoreDetection(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }

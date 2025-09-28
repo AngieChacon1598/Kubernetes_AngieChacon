@@ -50,7 +50,38 @@ public class JSearchController {
     }
 
     @GetMapping("/all")
-    public Mono<ResponseEntity<Flux<JobSearchResult>>> getAllSearchResults() {
+    public Mono<ResponseEntity<Flux<JobSearchResult>>> getAllSearchResults(
+            @RequestParam(required = false) Boolean includeDeleted) {
+        if (Boolean.TRUE.equals(includeDeleted)) {
+            return Mono.just(ResponseEntity.ok(jSearchService.getAllSearchResultsIncludingDeleted()));
+        }
         return Mono.just(ResponseEntity.ok(jSearchService.getAllSearchResults()));
+    }
+
+    @GetMapping("/deleted")
+    public Mono<ResponseEntity<Flux<JobSearchResult>>> getDeletedSearchResults() {
+        return Mono.just(ResponseEntity.ok(jSearchService.getDeletedSearchResults()));
+    }
+
+    @PutMapping("/{id}")
+    public Mono<ResponseEntity<JobSearchResult>> updateSearchResult(
+            @PathVariable String id,
+            @RequestBody JobSearchRequest request) {
+        return jSearchService.updateSearchResult(id, request)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public Mono<ResponseEntity<Void>> deleteSearchResult(@PathVariable String id) {
+        return jSearchService.softDeleteSearchResult(id)
+                .thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @PatchMapping("/{id}/restore")
+    public Mono<ResponseEntity<JobSearchResult>> restoreSearchResult(@PathVariable String id) {
+        return jSearchService.restoreSearchResult(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }

@@ -19,6 +19,9 @@ public class JobSearchResult {
     private List<Job> jobs;
     private LocalDateTime searchedAt;
     private Map<String, Object> metadata;
+    private LocalDateTime updatedAt;
+    private Boolean deleted;
+    private LocalDateTime deletedAt;
 
     @Data
     public static class Job {

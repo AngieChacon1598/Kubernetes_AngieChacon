@@ -16,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,22 +33,20 @@ public class JSearchService {
 
     public Mono<JobSearchResult> searchJobs(JobSearchRequest request) {
         log.info("Searching jobs with query: {}, location: {}", request.getQuery(), request.getLocation());
-        
-        // Determinar país basado en la ubicación
+
         final String country = determineCountry(request.getLocation());
         log.info("Using country code: {} for location: {}", country, request.getLocation());
-        
-        // Limitar el número de resultados para evitar respuestas muy grandes
-        int numPages = Math.min(request.getResultsPerPage(), 5); // Máximo 5 páginas por defecto
-        
+
+        int numPages = Math.min(request.getResultsPerPage(), 5);
+
         return jsearchWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search")
                         .queryParam("query", request.getQuery())
                         .queryParam("page", request.getPage())
-                        .queryParam("num_pages", numPages) // Usar el valor limitado
-                        .queryParam("country", country) // País detectado automáticamente
-                        .queryParam("date_posted", "all") // All dates
+                        .queryParam("num_pages", numPages)
+                        .queryParam("country", country)
+                        .queryParam("date_posted", "all")
                         .build())
                 .retrieve()
                 .onStatus(
@@ -61,17 +60,16 @@ public class JSearchService {
                                     ));
                                 })
                 )
-                .bodyToMono(String.class) // Primero obtenemos como String
+                .bodyToMono(String.class)
                 .doOnNext(responseBody -> log.info("Raw response received, length: {} bytes", responseBody.length()))
                 .flatMap(responseBody -> {
                     try {
-                        // Parsear JSON manualmente
                         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                         JobSearchResponse response = mapper.readValue(responseBody, JobSearchResponse.class);
-                        
-                        log.info("JSON parsed successfully. Status: {}, Data size: {}", 
+
+                        log.info("JSON parsed successfully. Status: {}, Data size: {}",
                                 response.getStatus(), response.getData() != null ? response.getData().size() : 0);
-                        
+
                         if (response.getData() == null || response.getData().isEmpty()) {
                             return Mono.error(new ApiException(
                                     HttpStatus.NOT_FOUND,
@@ -83,10 +81,11 @@ public class JSearchService {
                         result.setQuery(request.getQuery());
                         result.setLocation(request.getLocation());
                         result.setPage(request.getPage());
-                        result.setResultsPerPage(numPages); // Usar el valor limitado
+                        result.setResultsPerPage(numPages);
                         result.setSearchedAt(LocalDateTime.now());
+                        result.setUpdatedAt(LocalDateTime.now());
+                        result.setDeleted(false);
 
-                        // Convertir los trabajos al formato de nuestro modelo
                         var jobs = response.getData().stream()
                                 .map(job -> {
                                     var jobResult = new JobSearchResult.Job();
@@ -105,7 +104,6 @@ public class JSearchService {
 
                         result.setJobs(jobs);
 
-                        // Agregar metadatos de la respuesta
                         Map<String, Object> metadata = new HashMap<>();
                         metadata.put("status", response.getStatus());
                         metadata.put("requestId", response.getRequestId());
@@ -139,10 +137,9 @@ public class JSearchService {
                 });
     }
 
-    // Método adicional para obtener detalles de un trabajo específico
     public Mono<JobSearchResponse.Job> getJobDetails(String jobId) {
         log.info("Getting job details for jobId: {}", jobId);
-        
+
         return jsearchWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/job-details")
@@ -175,21 +172,23 @@ public class JSearchService {
 
     private String determineCountry(String location) {
         if (location == null) return "us";
-        
+
         String loc = location.toLowerCase();
         if (loc.contains("peru") || loc.contains("trujillo") || loc.contains("lima")) {
             return "pe";
         } else if (loc.contains("mexico") || loc.contains("cdmx")) {
             return "mx";
-        } else if (loc.contains("spain") || location.contains("madrid") || location.contains("barcelona")) {
+        } else if (loc.contains("spain") || loc.contains("madrid") || loc.contains("barcelona")) {
             return "es";
         }
-        return "us"; // Default
+        return "us";
     }
 
+    // ✅ Método parseDateTime actualizado para manejar fechas ISO 8601
     private LocalDateTime parseDateTime(String dateTimeStr) {
         try {
-            return dateTimeStr != null ? LocalDateTime.parse(dateTimeStr) : null;
+            if (dateTimeStr == null) return null;
+            return ZonedDateTime.parse(dateTimeStr).toLocalDateTime();
         } catch (Exception e) {
             log.warn("Error parsing date time: {}", dateTimeStr, e);
             return null;
@@ -197,18 +196,69 @@ public class JSearchService {
     }
 
     public Mono<JobSearchResult> getSearchResultById(String id) {
-        return repository.findById(id)
+        return repository.findByIdAndDeletedFalse(id)
                 .switchIfEmpty(Mono.error(new ApiException(
-                        org.springframework.http.HttpStatus.NOT_FOUND,
+                        HttpStatus.NOT_FOUND,
                         "Job search result not found with id: " + id
                 )));
     }
 
     public Flux<JobSearchResult> getAllSearchResults() {
+        return repository.findByDeletedFalse();
+    }
+
+    public Flux<JobSearchResult> getDeletedSearchResults() {
+        return repository.findByDeletedTrue();
+    }
+
+    public Flux<JobSearchResult> getAllSearchResultsIncludingDeleted() {
         return repository.findAll();
     }
 
-    public Mono<Void> deleteSearchResult(String id) {
-        return repository.deleteById(id);
+    // ✅ Método updateSearchResult actualizado para evitar duplicados
+    public Mono<JobSearchResult> updateSearchResult(String id, JobSearchRequest request) {
+        log.info("Updating job search result id: {} with new request", id);
+        return getSearchResultById(id)
+                .flatMap(existing -> {
+                    existing.setQuery(request.getQuery());
+                    existing.setLocation(request.getLocation());
+                    existing.setPage(request.getPage());
+                    existing.setResultsPerPage(request.getResultsPerPage());
+                    existing.setUpdatedAt(LocalDateTime.now());
+                    return repository.save(existing);
+                });
+    }
+
+    public Mono<Void> softDeleteSearchResult(String id) {
+        log.info("Soft-deleting job search result id: {}", id);
+        return getSearchResultById(id)
+                .flatMap(existing -> {
+                    existing.setDeleted(true);
+                    existing.setDeletedAt(LocalDateTime.now());
+                    existing.setUpdatedAt(LocalDateTime.now());
+                    return repository.save(existing);
+                })
+                .then();
+    }
+
+    public Mono<JobSearchResult> restoreSearchResult(String id) {
+        log.info("Restoring job search result id: {}", id);
+        return repository.findById(id)
+                .switchIfEmpty(Mono.error(new ApiException(
+                        HttpStatus.NOT_FOUND,
+                        "Job search result not found with id: " + id
+                )))
+                .flatMap(existing -> {
+                    if (!Boolean.TRUE.equals(existing.getDeleted())) {
+                        return Mono.error(new ApiException(
+                                HttpStatus.BAD_REQUEST,
+                                "Job search result is not deleted and cannot be restored"
+                        ));
+                    }
+                    existing.setDeleted(false);
+                    existing.setDeletedAt(null);
+                    existing.setUpdatedAt(LocalDateTime.now());
+                    return repository.save(existing);
+                });
     }
 }
