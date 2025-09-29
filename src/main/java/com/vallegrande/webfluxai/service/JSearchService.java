@@ -174,13 +174,65 @@ public class JSearchService {
         if (location == null) return "us";
 
         String loc = location.toLowerCase();
-        if (loc.contains("peru") || loc.contains("trujillo") || loc.contains("lima")) {
+        
+        // América del Sur
+        if (loc.contains("argentina") || loc.contains("buenos aires") || loc.contains("cordoba") || loc.contains("rosario")) {
+            return "ar";
+        } else if (loc.contains("bolivia") || loc.contains("la paz") || loc.contains("santa cruz") || loc.contains("cochabamba")) {
+            return "bo";
+        } else if (loc.contains("brasil") || loc.contains("brazil") || loc.contains("sao paulo") || loc.contains("rio de janeiro")) {
+            return "br";
+        } else if (loc.contains("chile") || loc.contains("santiago") || loc.contains("valparaiso") || loc.contains("concepcion")) {
+            return "cl";
+        } else if (loc.contains("colombia") || loc.contains("bogota") || loc.contains("medellin") || loc.contains("cali")) {
+            return "co";
+        } else if (loc.contains("ecuador") || loc.contains("quito") || loc.contains("guayaquil") || loc.contains("cuenca")) {
+            return "ec";
+        } else if (loc.contains("paraguay") || loc.contains("asuncion") || loc.contains("ciudad del este")) {
+            return "py";
+        } else if (loc.contains("peru") || loc.contains("lima") || loc.contains("arequipa") || loc.contains("trujillo")) {
             return "pe";
-        } else if (loc.contains("mexico") || loc.contains("cdmx")) {
-            return "mx";
-        } else if (loc.contains("spain") || loc.contains("madrid") || loc.contains("barcelona")) {
-            return "es";
+        } else if (loc.contains("uruguay") || loc.contains("montevideo") || loc.contains("salto")) {
+            return "uy";
+        } else if (loc.contains("venezuela") || loc.contains("caracas") || loc.contains("maracaibo")) {
+            return "ve";
         }
+        
+        // América Central y el Caribe
+        else if (loc.contains("costa rica") || loc.contains("san jose")) {
+            return "cr";
+        } else if (loc.contains("cuba") || loc.contains("habana") || loc.contains("havana")) {
+            return "cu";
+        } else if (loc.contains("el salvador") || loc.contains("san salvador")) {
+            return "sv";
+        } else if (loc.contains("guatemala") || loc.contains("ciudad de guatemala")) {
+            return "gt";
+        } else if (loc.contains("honduras") || loc.contains("tegucigalpa")) {
+            return "hn";
+        } else if (loc.contains("mexico") || loc.contains("cdmx") || loc.contains("guadalajara") || loc.contains("monterrey")) {
+            return "mx";
+        } else if (loc.contains("nicaragua") || loc.contains("managua")) {
+            return "ni";
+        } else if (loc.contains("panama") || loc.contains("ciudad de panama")) {
+            return "pa";
+        }
+        
+        // Europa
+        else if (loc.contains("españa") || loc.contains("spain") || loc.contains("madrid") || loc.contains("barcelona")) {
+            return "es";
+        } else if (loc.contains("francia") || loc.contains("france") || loc.contains("paris")) {
+            return "fr";
+        } else if (loc.contains("alemania") || loc.contains("germany") || loc.contains("berlin")) {
+            return "de";
+        } else if (loc.contains("italia") || loc.contains("italy") || loc.contains("roma") || loc.contains("milan")) {
+            return "it";
+        } else if (loc.contains("reino unido") || loc.contains("uk") || loc.contains("london") || loc.contains("londres")) {
+            return "gb";
+        } else if (loc.contains("portugal") || loc.contains("lisboa")) {
+            return "pt";
+        }
+        
+        // Por defecto, si no se encuentra ninguna coincidencia
         return "us";
     }
 
