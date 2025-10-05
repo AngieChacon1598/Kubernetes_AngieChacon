@@ -267,7 +267,7 @@ public class JSearchService {
         return repository.findAll();
     }
 
-    // ✅ Método updateSearchResult actualizado para evitar duplicados
+    // Método updateSearchResult actualizado para evitar duplicados
     public Mono<JobSearchResult> updateSearchResult(String id, JobSearchRequest request) {
         log.info("Updating job search result id: {} with new request", id);
         return getSearchResultById(id)

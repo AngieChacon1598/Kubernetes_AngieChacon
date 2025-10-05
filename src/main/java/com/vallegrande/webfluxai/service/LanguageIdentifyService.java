@@ -61,14 +61,12 @@ public class LanguageIdentifyService {
                 .flatMap(response -> {
                     JsonNode codes = response.get("languageCodes");
                     if (codes != null && codes.isArray() && codes.size() > 0) {
-                        // Tomamos el primer idioma detectado (el de mayor confianza)
                         JsonNode primary = codes.get(0);
                         String languageCode = primary.get("code").asText();
                         double confidence = primary.get("confidence").asDouble();
                         
                         log.info("Idioma detectado: {} con confianza: {}", languageCode, confidence);
                         
-                        // Creamos y guardamos la detección
                         LanguageDetection detection = LanguageDetection.builder()
                                 .text(text)
                                 .createdAt(LocalDateTime.now())
@@ -186,9 +184,18 @@ public class LanguageIdentifyService {
                 });
     }
     
+    // 🔹 Nuevo método agregado
+    public Mono<Void> permanentDeleteDetection(String id) {
+        log.info("Permanently deleting language detection id: {}", id);
+        return repository.findById(id)
+                .switchIfEmpty(Mono.error(new ApiException(
+                        HttpStatus.NOT_FOUND,
+                        "Language detection not found with id: " + id
+                )))
+                .flatMap(detection -> repository.delete(detection));
+    }
+    
     private String getLanguageName(String code) {
-        // Simple mapping of language codes to names
-        // You might want to use a proper localization solution in production
         return switch (code.toLowerCase()) {
             case "en" -> "English";
             case "es" -> "Spanish";

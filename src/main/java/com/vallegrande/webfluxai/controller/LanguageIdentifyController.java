@@ -54,6 +54,12 @@ public class LanguageIdentifyController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    @DeleteMapping("/detections/{id}/permanent")
+    public Mono<ResponseEntity<Void>> permanentDeleteDetection(@PathVariable String id) {
+        return languageIdentifyService.permanentDeleteDetection(id)
+            .thenReturn(ResponseEntity.noContent().build());
+    }
+
     @DeleteMapping("/detections/{id}")
     public Mono<ResponseEntity<Void>> deleteDetection(@PathVariable String id) {
         return languageIdentifyService.softDeleteDetection(id)
