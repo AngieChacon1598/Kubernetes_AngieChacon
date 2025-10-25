@@ -71,10 +71,31 @@ public class JSearchService {
                                 response.getStatus(), response.getData() != null ? response.getData().size() : 0);
 
                         if (response.getData() == null || response.getData().isEmpty()) {
-                            return Mono.error(new ApiException(
-                                    HttpStatus.NOT_FOUND,
-                                    "No jobs found matching the criteria"
-                            ));
+                            log.info("No jobs found for query: '{}' in location: '{}' (country: {})", 
+                                    request.getQuery(), request.getLocation(), country);
+                            
+                            // Crear un resultado vacío en lugar de lanzar error
+                            var emptyResult = new JobSearchResult();
+                            emptyResult.setQuery(request.getQuery());
+                            emptyResult.setLocation(request.getLocation());
+                            emptyResult.setPage(request.getPage());
+                            emptyResult.setResultsPerPage(numPages);
+                            emptyResult.setSearchedAt(LocalDateTime.now());
+                            emptyResult.setUpdatedAt(LocalDateTime.now());
+                            emptyResult.setDeleted(false);
+                            emptyResult.setJobs(java.util.Collections.emptyList());
+                            
+                            Map<String, Object> metadata = new HashMap<>();
+                            metadata.put("status", response.getStatus());
+                            metadata.put("requestId", response.getRequestId());
+                            metadata.put("searchQuery", request.getQuery());
+                            metadata.put("searchPage", request.getPage());
+                            metadata.put("searchCountry", country);
+                            metadata.put("totalResults", 0);
+                            metadata.put("message", "No jobs found matching the criteria");
+                            emptyResult.setMetadata(metadata);
+                            
+                            return repository.save(emptyResult);
                         }
 
                         var result = new JobSearchResult();
@@ -267,17 +288,38 @@ public class JSearchService {
         return repository.findAll();
     }
 
-    // Método updateSearchResult actualizado para evitar duplicados
+    // Método updateSearchResult actualizado para ejecutar nueva búsqueda cuando cambien parámetros
     public Mono<JobSearchResult> updateSearchResult(String id, JobSearchRequest request) {
         log.info("Updating job search result id: {} with new request", id);
         return getSearchResultById(id)
                 .flatMap(existing -> {
-                    existing.setQuery(request.getQuery());
-                    existing.setLocation(request.getLocation());
-                    existing.setPage(request.getPage());
-                    existing.setResultsPerPage(request.getResultsPerPage());
-                    existing.setUpdatedAt(LocalDateTime.now());
-                    return repository.save(existing);
+                    // Verificar si los parámetros de búsqueda han cambiado
+                    boolean searchParamsChanged = !request.getQuery().equals(existing.getQuery()) ||
+                            !java.util.Objects.equals(request.getLocation(), existing.getLocation()) ||
+                            !request.getPage().equals(existing.getPage()) ||
+                            !request.getResultsPerPage().equals(existing.getResultsPerPage());
+                    
+                    if (searchParamsChanged) {
+                        log.info("Search parameters changed, executing new search for id: {}", id);
+                        // Ejecutar nueva búsqueda con los parámetros actualizados
+                        return searchJobs(request)
+                                .flatMap(newResult -> {
+                                    // Mantener el ID original y fechas de creación
+                                    newResult.setId(id);
+                                    newResult.setSearchedAt(existing.getSearchedAt());
+                                    newResult.setUpdatedAt(LocalDateTime.now());
+                                    return repository.save(newResult);
+                                });
+                    } else {
+                        log.info("No search parameters changed, updating metadata only for id: {}", id);
+                        // Solo actualizar metadatos si no hay cambios en parámetros de búsqueda
+                        existing.setQuery(request.getQuery());
+                        existing.setLocation(request.getLocation());
+                        existing.setPage(request.getPage());
+                        existing.setResultsPerPage(request.getResultsPerPage());
+                        existing.setUpdatedAt(LocalDateTime.now());
+                        return repository.save(existing);
+                    }
                 });
     }
 
