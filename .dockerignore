@@ -1,0 +1,36 @@
+# Maven
+target/
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# GitHub
+.github/
+
+# Documentation
+README.md
+CICD_SETUP.md
+docs/
+
+# Tests
+src/test/
+
+# Temporales
+*.log
+*.tmp
+
