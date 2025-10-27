@@ -151,4 +151,5 @@ Este proyecto incluye un pipeline automatizado con GitHub Actions que:
 - ✅ Valida el código antes de construir
 
 Ver más detalles en [CICD_SETUP.md](CICD_SETUP.md)
+Esto es una prueba
 
