@@ -101,19 +101,12 @@ mvn clean install
 mvn spring-boot:run
 ```
 
-### Docker
-
-#### Con GitHub Actions (Recomendado)
-El proyecto tiene configurado un pipeline de CI/CD que automáticamente:
-- Construye la imagen Docker en cada commit
-- Sube la imagen a Docker Hub
 
 **Configuración:**
 1. Agrega los secrets en GitHub:
    - `DOCKERHUB_USERNAME`: Tu usuario de Docker Hub
    - `DOCKERHUB_TOKEN`: Tu access token de Docker Hub
    
-2. Ver la documentación completa: [CICD_SETUP.md](CICD_SETUP.md)
 
 #### Ejecutar Imagen Docker Manualmente
 ```bash
@@ -132,7 +125,7 @@ docker logs -f webflux-ai
 
 #### Pull desde Docker Hub
 ```bash
-# Descargar la imagen (reemplaza 'tu-usuario' con tu usuario de Docker Hub)
+# Descargar la imagen
 docker pull tu-usuario/webflux-ai-backend:latest
 
 # Ejecutar
@@ -141,15 +134,3 @@ docker run -d \
   --name webflux-ai \
   tu-usuario/webflux-ai-backend:latest
 ```
-
-🎯 CI/CD Pipeline
-Este proyecto incluye un pipeline automatizado con GitHub Actions que:
-- ✅ Construye automáticamente la imagen Docker
-- ✅ Sube la imagen a Docker Hub en cada commit
-- ✅ Genera tags automáticos por rama y versión
-- ✅ Usa cache de Maven para builds más rápidas
-- ✅ Valida el código antes de construir
-
-Ver más detalles en [CICD_SETUP.md](CICD_SETUP.md)
-Esto es una prueba
-

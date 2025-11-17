@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  webflux-ai:
+    image: angie14/webflux-ai:latest 
+    container_name: webflux-ai-container
+   
+    ports:
+      - "${PORT:-8088}:${PORT:-8088}" 
+    environment:
+      - PORT=${PORT:-8088} 
+      - MONGODB_URI=${MONGODB_URI:-mongodb+srv://angiechacon:71491875@cluster0.nuwkm.mongodb.net/webflux-ai?retryWrites=true&w=majority&appName=Cluster0}
+      - MONGODB_DATABASE=${MONGODB_DATABASE:-webflux-ai}
+      - LANGUAGE_IDENTIFY_BASE_URL=${LANGUAGE_IDENTIFY_BASE_URL:-https://language-identify-detector.p.rapidapi.com}
+      - LANGUAGE_IDENTIFY_API_KEY=${LANGUAGE_IDENTIFY_API_KEY:-7eed17039dmsh63431ac43f3bab8p1c600cjsn1eee5acffea8}
+      - LANGUAGE_IDENTIFY_API_HOST=${LANGUAGE_IDENTIFY_API_HOST:-language-identify-detector.p.rapidapi.com}
+      - JSEARCH_BASE_URL=${JSEARCH_BASE_URL:-https://jsearch.p.rapidapi.com}
+      - JSEARCH_API_KEY=${JSEARCH_API_KEY:-7eed17039dmsh63431ac43f3bab8p1c600cjsn1eee5acffea8}
+      - JSEARCH_API_HOST=${JSEARCH_API_HOST:-jsearch.p.rapidapi.com}
+      - LOGGING_LEVEL_ROOT=${LOGGING_LEVEL_ROOT:-INFO}
+      - LOGGING_LEVEL_COM_VALLEGRANDE=${LOGGING_LEVEL_COM_VALLEGRANDE:-DEBUG}
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:$$PORT/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - my-network
+
+
+    # Para realizar la prueba: /api/v1/language/detections
+  
+
+networks:
+  my-network:
+    name: my-network
+    driver: bridge
