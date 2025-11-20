@@ -1,14 +1,13 @@
-version: '3'
-
 services:
+  # Backend
   webflux-ai:
     image: angie14/webflux-ai:latest 
     container_name: webflux-ai-container
    
     ports:
-      - "${PORT:-8088}:${PORT:-8088}" 
+      - "${BACKEND_PORT:-9080}:${BACKEND_PORT:-9080}" 
     environment:
-      - PORT=${PORT:-8088} 
+      - PORT=${BACKEND_PORT:-9080} 
       - MONGODB_URI=${MONGODB_URI:-mongodb+srv://angiechacon:71491875@cluster0.nuwkm.mongodb.net/webflux-ai?retryWrites=true&w=majority&appName=Cluster0}
       - MONGODB_DATABASE=${MONGODB_DATABASE:-webflux-ai}
       - LANGUAGE_IDENTIFY_BASE_URL=${LANGUAGE_IDENTIFY_BASE_URL:-https://language-identify-detector.p.rapidapi.com}
@@ -28,10 +27,36 @@ services:
     restart: unless-stopped
     networks:
       - my-network
-
-
     # Para realizar la prueba: /api/v1/language/detections
-  
+
+  # Frontend
+  frontend-apis-ia:
+    # Imagen del frontend desde Docker Hub
+    image: ${FRONTEND_IMAGE:-angie14/as232s5-aej-02-fe:latest}
+    container_name: frontend-apis-ia-container
+    ports:
+      - "${FRONTEND_PORT:-8482}:80"
+    volumes:
+      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      - BACKEND_PORT=${BACKEND_PORT:-9080}
+      - APIURL=http://webflux-ai:${BACKEND_PORT:-9080}
+      - REACT_APP_APIURL=http://webflux-ai:${BACKEND_PORT:-9080}
+      - VUE_APP_APIURL=http://webflux-ai:${BACKEND_PORT:-9080}
+      - NG_APP_APIURL=http://webflux-ai:${BACKEND_PORT:-9080}
+    depends_on:
+      - webflux-ai
+    restart: unless-stopped
+    networks:
+      - my-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Endpoint de acceso al proyecto: http://localhost:8482/dashboard
 
 networks:
   my-network:
