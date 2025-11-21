@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: angie-chacon-back-deployment
+  labels:
+    app: angie-chacon-back
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: angie-chacon-back
+  template:
+    metadata:
+      labels:
+        app: angie-chacon-back
+    spec:
+      containers:
+      - name: angie-chacon-back-container
+        image: angie14/webflux-ai:latest
+        ports:
+        - containerPort: 8088
+          name: http
+        env:
+        - name: PORT
+          value: "8088"
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: angie-chacon-back-secrets
+              key: mongodb-uri
+        - name: MONGODB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: angie-chacon-back-configmap
+              key: mongodb-database
+        - name: LANGUAGE_IDENTIFY_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: angie-chacon-back-configmap
+              key: language-identify-base-url
+        - name: LANGUAGE_IDENTIFY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: angie-chacon-back-secrets
+              key: language-identify-api-key
+        - name: LANGUAGE_IDENTIFY_API_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: angie-chacon-back-configmap
+              key: language-identify-api-host
+        - name: JSEARCH_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: angie-chacon-back-configmap
+              key: jsearch-base-url
+        - name: JSEARCH_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: angie-chacon-back-secrets
+              key: jsearch-api-key
+        - name: JSEARCH_API_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: angie-chacon-back-configmap
+              key: jsearch-api-host
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8088
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8088
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+

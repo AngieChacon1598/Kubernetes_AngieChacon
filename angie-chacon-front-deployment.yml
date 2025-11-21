@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: angie-chacon-front-deployment
+  labels:
+    app: angie-chacon-front
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: angie-chacon-front
+  template:
+    metadata:
+      labels:
+        app: angie-chacon-front
+    spec:
+      containers:
+      - name: angie-chacon-front-container
+        image: angie14/as232s5-aej-02-fe:latest
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/templates/default.conf.template
+          subPath: default.conf.template
+        env:
+        - name: BACKEND_PORT
+          value: "8088"
+        - name: APIURL
+          value: "http://angie-chacon-back-service:8088"
+        - name: REACT_APP_APIURL
+          value: "http://angie-chacon-back-service:8088"
+        - name: VUE_APP_APIURL
+          value: "http://angie-chacon-back-service:8088"
+        - name: NG_APP_APIURL
+          value: "http://angie-chacon-back-service:8088"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: angie-chacon-front-configmap
+
