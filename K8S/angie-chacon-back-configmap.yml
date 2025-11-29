@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: angie-chacon-back-configmap
+  namespace: angie-chacon
+  labels:
+    app: angie-chacon-back
+data:
+  mongodb-database: "webflux-ai"
+  language-identify-base-url: "https://language-identify-detector.p.rapidapi.com"
+  language-identify-api-host: "language-identify-detector.p.rapidapi.com"
+  jsearch-base-url: "https://jsearch.p.rapidapi.com"
+  jsearch-api-host: "jsearch.p.rapidapi.com"
+
